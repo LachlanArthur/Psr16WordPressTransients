@@ -12,6 +12,14 @@ use Psr\SimpleCache\CacheInterface;
 
 class WordPressTransientAdapter implements CacheInterface {
 
+	protected $keyPrefix = '';
+
+	public function __construct( $keyPrefix = '' ) {
+
+		$this->keyPrefix = $keyPrefix;
+
+	}
+
 	/**
 	 * List of invalid (or reserved) key characters.
 	 *
@@ -23,6 +31,8 @@ class WordPressTransientAdapter implements CacheInterface {
 	 * {@inheritdoc}
 	 */
 	public function get( $key, $default = null ) {
+
+		$key = $this->keyPrefix . $key;
 
 		$this->assertValidKey( $key );
 
@@ -38,6 +48,8 @@ class WordPressTransientAdapter implements CacheInterface {
 	 * {@inheritdoc}
 	 */
 	public function set( $key, $value, $ttl = null ) {
+
+		$key = $this->keyPrefix . $key;
 
 		$this->assertValidKey( $key );
 
@@ -55,6 +67,8 @@ class WordPressTransientAdapter implements CacheInterface {
 	 * {@inheritdoc}
 	 */
 	public function delete( $key ) {
+
+		$key = $this->keyPrefix . $key;
 
 		$this->assertValidKey( $key );
 
@@ -204,6 +218,12 @@ class WordPressTransientAdapter implements CacheInterface {
 		if ( $key === '' ) {
 			throw new InvalidArgumentException(
 				'Invalid key. Key should not be empty.'
+			);
+		}
+
+		if ( strlen( $key ) > 172 ) {
+			throw new InvalidArgumentException(
+				'Invalid key. Key length should not exceed 172 characters.'
 			);
 		}
 
