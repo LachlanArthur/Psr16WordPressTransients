@@ -7,7 +7,7 @@ composer require lachlanarthur/psr16-wordpress-transients
 ```php
 use LachlanArthur\Psr16WordPressTransients\WordPressTransientAdapter
 
-new WordPressTransientAdapter( 'prefix-' );
+new WordPressTransientAdapter( 'prefix-', MONTH_IN_SECONDS );
 ```
 
 ### NOTES
