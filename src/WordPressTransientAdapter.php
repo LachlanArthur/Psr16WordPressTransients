@@ -12,20 +12,35 @@ use Psr\SimpleCache\CacheInterface;
 
 class WordPressTransientAdapter implements CacheInterface {
 
-	protected $keyPrefix = '';
-
-	public function __construct( $keyPrefix = '' ) {
-
-		$this->keyPrefix = $keyPrefix;
-
-	}
-
 	/**
 	 * List of invalid (or reserved) key characters.
 	 *
 	 * @var string
 	 */
 	const KEY_INVALID_CHARACTERS = '{}()/\@:';
+
+	protected $keyPrefix = '';
+
+	protected $defaultTtl = null;
+
+	public function __construct( $keyPrefix = '', $defaultTtl = null ) {
+
+		if ( ! is_string( $keyPrefix ) ) {
+			throw new InvalidArgumentException(
+				'Invalid key prefix: ' . \var_export( $keyPrefix, true ) . '. Key prefix should be a string.'
+			);
+		}
+
+		if ( $defaultTtl !== null && ! is_int( $defaultTtl ) ) {
+			throw new InvalidArgumentException(
+				'Invalid time: ' . \serialize( $keyPrefix ) . '. Must be an integer.'
+			);
+		}
+
+		$this->keyPrefix = $keyPrefix;
+		$this->defaultTtl = $defaultTtl;
+
+	}
 
 	/**
 	 * {@inheritdoc}
@@ -231,8 +246,7 @@ class WordPressTransientAdapter implements CacheInterface {
 		$invalid = \preg_quote( static::KEY_INVALID_CHARACTERS, '/' );
 		if ( \preg_match( '/[' . $invalid . ']/', $key ) ) {
 			throw new InvalidArgumentException(
-				'Invalid key: ' . $key . '. Contains (a) character(s) reserved '.
-				'for future extension: ' . static::KEY_INVALID_CHARACTERS
+				'Invalid key: ' . $key . '. Contains reserved characters ' . static::KEY_INVALID_CHARACTERS
 			);
 		}
 	}
@@ -248,6 +262,12 @@ class WordPressTransientAdapter implements CacheInterface {
 	 * @throws \TypeError
 	 */
 	protected function ttl( $ttl ) {
+
+		if ( $ttl === null ) {
+
+			$ttl = $this->defaultTtl;
+
+		}
 
 		if ( $ttl === null ) {
 
@@ -272,7 +292,7 @@ class WordPressTransientAdapter implements CacheInterface {
 
 		}
 
-		throw new \TypeError( 'Invalid time: ' . serialize( $ttl ) . '. Must be integer or instance of DateInterval.' );
+		throw new \TypeError( 'Invalid time: ' . serialize( $ttl ) . '. Must be an integer or instance of DateInterval.' );
 
 	}
 
